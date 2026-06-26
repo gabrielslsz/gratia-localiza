@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+
+{% block title %}Chamado #{{ "%05d" | format(ticket.id) }} - Gratia Localiza{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{{ url_for('customer.dashboard') }}" class="text-secondary text-decoration-none fw-medium">
+        <i class="bi bi-arrow-left me-1"></i> Voltar para os chamados
+    </a>
+</div>
+
+<div class="row">
+    <!-- Ticket Details Sidebar -->
+    <div class="col-md-4 mb-4">
+        <div class="glass-card h-100">
+            <h3 class="mb-3">Detalhes do Chamado</h3>
+            <hr style="border-color: var(--border-color);">
+            
+            <div class="mb-3">
+                <span class="text-secondary d-block font-size-85">Protocolo</span>
+                <span class="fw-bold">#{{ "%05d" | format(ticket.id) }}</span>
+            </div>
+            
+            <div class="mb-3">
+                <span class="text-secondary d-block font-size-85">Status</span>
+                {% if ticket.status == 'open' %}
+                    <span class="badge-status badge-status-open"><i class="bi bi-record-circle"></i> Aberto</span>
+                {% elif ticket.status == 'in_progress' %}
+                    <span class="badge-status badge-status-in_progress"><i class="bi bi-play-circle"></i> Em Progresso</span>
+                {% elif ticket.status == 'resolved' %}
+                    <span class="badge-status badge-status-resolved"><i class="bi bi-check-circle"></i> Resolvido</span>
+                {% elif ticket.status == 'closed' %}
+                    <span class="badge-status badge-status-closed"><i class="bi bi-slash-circle"></i> Fechado</span>
+                {% endif %}
+            </div>
+
+            <div class="mb-3">
+                <span class="text-secondary d-block font-size-85">Aberto em</span>
+                <span>{{ ticket.created_at.strftime('%d/%m/%Y às %H:%M') }}</span>
+            </div>
+
+            <div class="mb-3">
+                <span class="text-secondary d-block font-size-85">Última atualização</span>
+                <span>{{ ticket.updated_at.strftime('%d/%m/%Y às %H:%M') }}</span>
+            </div>
+
+            <div class="mb-3">
+                <span class="text-secondary d-block font-size-85">Atendente atribuído</span>
+                {% if ticket.attendant %}
+                    <span><i class="bi bi-person-badge text-warning me-1"></i> {{ ticket.attendant.name }}</span>
+                {% else %}
+                    <span class="text-muted"><i class="bi bi-hourglass-split me-1"></i> Aguardando suporte</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Ticket Description & Conversation -->
+    <div class="col-md-8 mb-4">
+        <div class="glass-card mb-4">
+            <h2 class="mb-2">{{ ticket.title }}</h2>
+            <div class="p-3 rounded my-3" style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color);">
+                <p class="mb-0" style="white-space: pre-line; line-height: 1.6;">{{ ticket.description }}</p>
+            </div>
+        </div>
+
+        <div class="glass-card">
+            <h3 class="mb-4">Conversa</h3>
+            
+            {% if not ticket.comments %}
+                <div class="text-center py-4">
+                    <i class="bi bi-chat-left-dots text-muted display-4 mb-2 d-inline-block" style="opacity: 0.3;"></i>
+                    <p class="text-secondary mb-0">Nenhuma interação neste chamado ainda. Escreva uma mensagem abaixo.</p>
+                </div>
+            {% else %}
+                <div class="comment-list">
+                    {% for comment in ticket.comments %}
+                        <div class="comment-item user-{{ comment.user.role }}">
+                            <div class="comment-header">
+                                <span class="comment-author text-light">
+                                    {{ comment.user.name }} 
+                                    <span class="text-secondary ms-1 fs-7">
+                                        {% if comment.user.role == 'admin' %}
+                                            (Admin)
+                                        {% elif comment.user.role == 'attendant' %}
+                                            (Suporte)
+                                        {% else %}
+                                            (Cliente)
+                                        {% endif %}
+                                    </span>
+                                </span>
+                                <span class="comment-date">{{ comment.created_at.strftime('%d/%m/%Y às %H:%M') }}</span>
+                            </div>
+                            <div class="comment-body">
+                                <p class="mb-0" style="white-space: pre-line;">{{ comment.content }}</p>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <!-- Add Comment Form -->
+            {% if ticket.status != 'closed' %}
+                <hr class="my-4" style="border-color: var(--border-color);">
+                <h4 class="mb-3">Adicionar Comentário</h4>
+                <form action="{{ url_for('customer.view_ticket', ticket_id=ticket.id) }}" method="POST">
+                    <div class="mb-3">
+                        <textarea class="form-control" name="content" rows="4" placeholder="Escreva sua resposta..." required></textarea>
+                    </div>
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-premium">Enviar Mensagem</button>
+                    </div>
+                </form>
+            {% else %}
+                <div class="alert alert-info mt-4 mb-0" role="alert" style="background: rgba(99, 102, 241, 0.05); border: 1px solid rgba(99, 102, 241, 0.2); color: var(--text-primary);">
+                    <i class="bi bi-info-circle-fill me-2"></i> Este chamado está <strong>Fechado</strong> e não aceita mais comentários.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

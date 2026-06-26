@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block title %}Painel do Administrador - Gratia Localiza{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h1 class="mb-1">Painel Geral de Controle</h1>
+    <p class="text-secondary mb-0">Monitore as métricas globais e gerencie os chamados do sistema.</p>
+</div>
+
+<!-- Stats Row -->
+<div class="row mb-5">
+    <div class="col-md-2-4 col-sm-6 mb-3">
+        <div class="stat-card border-primary">
+            <div class="stat-icon text-primary"><i class="bi bi-ticket-detailed"></i></div>
+            <div class="stat-number">{{ total_tickets }}</div>
+            <div class="stat-label">Total de Chamados</div>
+        </div>
+    </div>
+    <div class="col-md-2-4 col-sm-6 mb-3">
+        <div class="stat-card border-info">
+            <div class="stat-icon text-info"><i class="bi bi-record-circle"></i></div>
+            <div class="stat-number text-info">{{ open_tickets }}</div>
+            <div class="stat-label">Abertos</div>
+        </div>
+    </div>
+    <div class="col-md-2-4 col-sm-6 mb-3">
+        <div class="stat-card border-warning">
+            <div class="stat-icon text-warning"><i class="bi bi-play-circle"></i></div>
+            <div class="stat-number text-warning">{{ in_progress }}</div>
+            <div class="stat-label">Em Progresso</div>
+        </div>
+    </div>
+    <div class="col-md-2-4 col-sm-6 mb-3">
+        <div class="stat-card border-success">
+            <div class="stat-icon text-success"><i class="bi bi-check-circle"></i></div>
+            <div class="stat-number text-success">{{ resolved }}</div>
+            <div class="stat-label">Resolvidos</div>
+        </div>
+    </div>
+    <div class="col-md-2-4 col-sm-6 mb-3">
+        <div class="stat-card border-secondary">
+            <div class="stat-icon text-secondary"><i class="bi bi-slash-circle"></i></div>
+            <div class="stat-number text-secondary">{{ closed }}</div>
+            <div class="stat-label">Fechados</div>
+        </div>
+    </div>
+</div>
+
+<!-- Tickets Table -->
+<h3 class="mb-3 d-flex align-items-center gap-2">
+    <i class="bi bi-list-task text-primary"></i> Todos os Chamados do Sistema
+</h3>
+
+<div class="glass-card">
+    {% if not tickets %}
+        <div class="text-center py-5">
+            <i class="bi bi-inbox text-muted display-1 mb-3 d-inline-block" style="opacity: 0.3;"></i>
+            <h3>Nenhum chamado no sistema</h3>
+            <p class="text-secondary">Nenhum cliente abriu chamado no sistema até o momento.</p>
+        </div>
+    {% else %}
+        <div class="table-responsive">
+            <table class="premium-table">
+                <thead>
+                    <tr>
+                        <th>Protocolo</th>
+                        <th>Título</th>
+                        <th>Cliente</th>
+                        <th>Atendente</th>
+                        <th>Data de Abertura</th>
+                        <th>Status</th>
+                        <th class="text-end">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ticket in tickets %}
+                        <tr>
+                            <td><span class="text-secondary">#{{ "%05d" | format(ticket.id) }}</span></td>
+                            <td><span class="fw-semibold">{{ ticket.title }}</span></td>
+                            <td><span>{{ ticket.customer.name }}</span></td>
+                            <td>
+                                {% if ticket.attendant %}
+                                    <span class="text-warning"><i class="bi bi-person-badge"></i> {{ ticket.attendant.name }}</span>
+                                {% else %}
+                                    <span class="text-muted"><i class="bi bi-hourglass-split"></i> Sem Atendente</span>
+                                {% endif %}
+                            </td>
+                            <td><span class="text-secondary">{{ ticket.created_at.strftime('%d/%m/%Y %H:%M') }}</span></td>
+                            <td>
+                                {% if ticket.status == 'open' %}
+                                    <span class="badge-status badge-status-open"><i class="bi bi-record-circle"></i> Aberto</span>
+                                {% elif ticket.status == 'in_progress' %}
+                                    <span class="badge-status badge-status-in_progress"><i class="bi bi-play-circle"></i> Em Progresso</span>
+                                {% elif ticket.status == 'resolved' %}
+                                    <span class="badge-status badge-status-resolved"><i class="bi bi-check-circle"></i> Resolvido</span>
+                                {% elif ticket.status == 'closed' %}
+                                    <span class="badge-status badge-status-closed"><i class="bi bi-slash-circle"></i> Fechado</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                <a href="{{ url_for('attendant.view_ticket', ticket_id=ticket.id) }}" class="btn btn-sm btn-premium-secondary py-2 px-3">
+                                    Gerenciar <i class="bi bi-gear ms-1"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Extra layout styling for 5-column layout on bootstrap grid -->
+<style>
+@media (min-width: 768px) {
+    .col-md-2-4 {
+        flex: 0 0 20%;
+        max-width: 20%;
+    }
+}
+</style>
+{% endblock %}

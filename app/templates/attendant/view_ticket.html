@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+
+{% block title %}Atendimento #{{ "%05d" | format(ticket.id) }} - Gratia Localiza{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{{ url_for('attendant.dashboard') }}" class="text-secondary text-decoration-none fw-medium">
+        <i class="bi bi-arrow-left me-1"></i> Voltar para o painel
+    </a>
+</div>
+
+<div class="row">
+    <!-- Ticket Actions & Info Sidebar -->
+    <div class="col-md-4 mb-4">
+        <div class="glass-card mb-4">
+            <h3 class="mb-3">Status do Chamado</h3>
+            <hr style="border-color: var(--border-color);">
+            
+            <div class="mb-4">
+                <span class="text-secondary d-block font-size-85 mb-1">Status Atual</span>
+                {% if ticket.status == 'open' %}
+                    <span class="badge-status badge-status-open"><i class="bi bi-record-circle"></i> Aberto</span>
+                {% elif ticket.status == 'in_progress' %}
+                    <span class="badge-status badge-status-in_progress"><i class="bi bi-play-circle"></i> Em Progresso</span>
+                {% elif ticket.status == 'resolved' %}
+                    <span class="badge-status badge-status-resolved"><i class="bi bi-check-circle"></i> Resolvido</span>
+                {% elif ticket.status == 'closed' %}
+                    <span class="badge-status badge-status-closed"><i class="bi bi-slash-circle"></i> Fechado</span>
+                {% endif %}
+            </div>
+
+            <!-- Claim or update status -->
+            {% if not ticket.attendant_id %}
+                <div class="alert alert-warning mb-3 fs-7" role="alert" style="background: rgba(245, 158, 11, 0.05); border: 1px solid rgba(245, 158, 11, 0.2); color: var(--text-primary);">
+                    Este chamado não tem atendente atribuído. Assuma o atendimento para responder.
+                </div>
+                <form action="{{ url_for('attendant.assign_ticket', ticket_id=ticket.id) }}" method="POST">
+                    <button type="submit" class="btn btn-premium w-100">
+                        Assumir Atendimento <i class="bi bi-person-plus ms-1"></i>
+                    </button>
+                </form>
+            {% elif ticket.attendant_id == current_user.id or current_user.role == 'admin' %}
+                <form action="{{ url_for('attendant.update_status', ticket_id=ticket.id) }}" method="POST" class="mb-3">
+                    <div class="mb-3">
+                        <label for="status" class="form-label">Alterar Status</label>
+                        <select class="form-select" id="status" name="status" onchange="this.form.submit()">
+                            <option value="in_progress" {% if ticket.status == 'in_progress' %}selected{% endif %}>Em Progresso</option>
+                            <option value="resolved" {% if ticket.status == 'resolved' %}selected{% endif %}>Resolvido</option>
+                            <option value="closed" {% if ticket.status == 'closed' %}selected{% endif %}>Fechado</option>
+                        </select>
+                    </div>
+                </form>
+            {% else %}
+                <div class="alert alert-info mb-0 fs-7" role="alert" style="background: rgba(99, 102, 241, 0.05); border: 1px solid rgba(99, 102, 241, 0.2); color: var(--text-primary);">
+                    Atribuído a: <strong>{{ ticket.attendant.name }}</strong>. Apenas o atendente responsável pode alterar o status.
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="glass-card">
+            <h3 class="mb-3">Informações do Cliente</h3>
+            <hr style="border-color: var(--border-color);">
+            
+            <div class="mb-3">
+                <span class="text-secondary d-block font-size-85">Nome</span>
+                <span class="fw-bold">{{ ticket.customer.name }}</span>
+            </div>
+            
+            <div class="mb-3">
+                <span class="text-secondary d-block font-size-85">E-mail</span>
+                <span>{{ ticket.customer.email }}</span>
+            </div>
+
+            <div class="mb-3">
+                <span class="text-secondary d-block font-size-85">Aberto em</span>
+                <span>{{ ticket.created_at.strftime('%d/%m/%Y às %H:%M') }}</span>
+            </div>
+
+            <div class="mb-0">
+                <span class="text-secondary d-block font-size-85">Última atualização</span>
+                <span>{{ ticket.updated_at.strftime('%d/%m/%Y às %H:%M') }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ticket Description & Conversation -->
+    <div class="col-md-8 mb-4">
+        <div class="glass-card mb-4">
+            <h2 class="mb-2">{{ ticket.title }}</h2>
+            <div class="p-3 rounded my-3" style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color);">
+                <p class="mb-0" style="white-space: pre-line; line-height: 1.6;">{{ ticket.description }}</p>
+            </div>
+        </div>
+
+        <div class="glass-card">
+            <h3 class="mb-4">Conversa</h3>
+            
+            {% if not ticket.comments %}
+                <div class="text-center py-4">
+                    <i class="bi bi-chat-left-dots text-muted display-4 mb-2 d-inline-block" style="opacity: 0.3;"></i>
+                    <p class="text-secondary mb-0">Nenhuma interação neste chamado ainda.</p>
+                </div>
+            {% else %}
+                <div class="comment-list">
+                    {% for comment in ticket.comments %}
+                        <div class="comment-item user-{{ comment.user.role }}">
+                            <div class="comment-header">
+                                <span class="comment-author text-light">
+                                    {{ comment.user.name }}
+                                    <span class="text-secondary ms-1 fs-7">
+                                        {% if comment.user.role == 'admin' %}
+                                            (Admin)
+                                        {% elif comment.user.role == 'attendant' %}
+                                            (Suporte)
+                                        {% else %}
+                                            (Cliente)
+                                        {% endif %}
+                                    </span>
+                                </span>
+                                <span class="comment-date">{{ comment.created_at.strftime('%d/%m/%Y às %H:%M') }}</span>
+                            </div>
+                            <div class="comment-body">
+                                <p class="mb-0" style="white-space: pre-line;">{{ comment.content }}</p>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <!-- Add Comment Form -->
+            {% if ticket.status != 'closed' %}
+                {% if ticket.attendant_id == current_user.id or current_user.role == 'admin' %}
+                    <hr class="my-4" style="border-color: var(--border-color);">
+                    <h4 class="mb-3">Adicionar Comentário</h4>
+                    <form action="{{ url_for('attendant.view_ticket', ticket_id=ticket.id) }}" method="POST">
+                        <div class="mb-3">
+                            <textarea class="form-control" name="content" rows="4" placeholder="Escreva sua resposta..." required></textarea>
+                        </div>
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-premium">Enviar Resposta</button>
+                        </div>
+                    </form>
+                {% else %}
+                    <div class="alert alert-secondary mt-4 mb-0" role="alert" style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); color: var(--text-secondary);">
+                        <i class="bi bi-info-circle me-2"></i> Você precisa assumir o chamado para enviar mensagens.
+                    </div>
+                {% endif %}
+            {% else %}
+                <div class="alert alert-info mt-4 mb-0" role="alert" style="background: rgba(99, 102, 241, 0.05); border: 1px solid rgba(99, 102, 241, 0.2); color: var(--text-primary);">
+                    <i class="bi bi-info-circle-fill me-2"></i> Este chamado está <strong>Fechado</strong> e não aceita mais comentários.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

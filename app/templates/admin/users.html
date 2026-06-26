@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% block title %}Gerenciar Atendentes - Gratia Localiza{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="mb-1">Gerenciar Equipe de Suporte</h1>
+        <p class="text-secondary mb-0">Cadastre e gerencie a lista de atendentes com acesso ao sistema.</p>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Form to Add Attendant -->
+    <div class="col-md-4 mb-4">
+        <div class="glass-card">
+            <h3 class="mb-3">Novo Atendente</h3>
+            <hr style="border-color: var(--border-color);">
+            
+            <form action="{{ url_for('admin.users') }}" method="POST">
+                <div class="mb-3">
+                    <label for="name" class="form-label">Nome Completo</label>
+                    <input type="text" class="form-control" id="name" name="name" placeholder="Nome do atendente" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="email" class="form-label">E-mail</label>
+                    <input type="email" class="form-control" id="email" name="email" placeholder="email@atendente.com" required>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="password" class="form-label">Senha Inicial</label>
+                    <input type="password" class="form-control" id="password" name="password" placeholder="Mínimo 6 caracteres" required>
+                </div>
+                
+                <button type="submit" class="btn btn-premium w-100">
+                    Cadastrar Atendente <i class="bi bi-person-plus ms-1"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Attendants List -->
+    <div class="col-md-8 mb-4">
+        <div class="glass-card">
+            <h3 class="mb-3">Atendentes Ativos</h3>
+            <hr style="border-color: var(--border-color);">
+            
+            {% if not attendants %}
+                <div class="text-center py-5">
+                    <i class="bi bi-people text-muted display-4 mb-2 d-inline-block" style="opacity: 0.3;"></i>
+                    <p class="text-secondary mb-0">Nenhum atendente cadastrado ainda. Use o formulário ao lado para cadastrar.</p>
+                </div>
+            {% else %}
+                <div class="table-responsive">
+                    <table class="premium-table">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>E-mail</th>
+                                <th>Data de Cadastro</th>
+                                <th class="text-end">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for attendant in attendants %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="rounded-circle d-flex align-items-center justify-content-center text-primary fw-bold" style="width: 36px; height: 36px; background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.2);">
+                                                {{ attendant.name[0] | upper }}
+                                            </div>
+                                            <span class="fw-semibold">{{ attendant.name }}</span>
+                                        </div>
+                                    </td>
+                                    <td><span class="text-secondary">{{ attendant.email }}</span></td>
+                                    <td><span class="text-secondary">{{ attendant.created_at.strftime('%d/%m/%Y') }}</span></td>
+                                    <td class="text-end">
+                                        <form action="{{ url_for('admin.delete_user', user_id=attendant.id) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja remover este atendente? Todas os chamados associados a ele ficarão sem atribuição.')" class="d-inline">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" style="border-radius: 8px; padding: 6px 12px;">
+                                                <i class="bi bi-trash"></i> Remover
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block title %}Painel do Suporte - Gratia Localiza{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h1 class="mb-1">Painel de Atendimento</h1>
+    <p class="text-secondary mb-0">Gerencie os chamados atribuídos a você e responda a novas solicitações.</p>
+</div>
+
+<div class="row">
+    <!-- Assigned to Me -->
+    <div class="col-12 mb-5">
+        <h3 class="mb-3 d-flex align-items-center gap-2">
+            <i class="bi bi-person-check text-primary"></i> Meus Atendimentos 
+            <span class="badge bg-primary fs-7 rounded-pill">{{ my_tickets | length }}</span>
+        </h3>
+        
+        <div class="glass-card">
+            {% if not my_tickets %}
+                <div class="text-center py-4">
+                    <i class="bi bi-emoji-smile text-muted display-4 mb-2 d-inline-block" style="opacity: 0.3;"></i>
+                    <p class="text-secondary mb-0">Você não possui nenhum chamado em andamento no momento.</p>
+                </div>
+            {% else %}
+                <div class="table-responsive">
+                    <table class="premium-table">
+                        <thead>
+                            <tr>
+                                <th>Protocolo</th>
+                                <th>Título</th>
+                                <th>Cliente</th>
+                                <th>Última Atualização</th>
+                                <th>Status</th>
+                                <th class="text-end">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ticket in my_tickets %}
+                                <tr>
+                                    <td><span class="text-secondary">#{{ "%05d" | format(ticket.id) }}</span></td>
+                                    <td><span class="fw-semibold">{{ ticket.title }}</span></td>
+                                    <td><span class="text-light">{{ ticket.customer.name }}</span></td>
+                                    <td><span class="text-secondary">{{ ticket.updated_at.strftime('%d/%m/%Y às %H:%M') }}</span></td>
+                                    <td>
+                                        {% if ticket.status == 'in_progress' %}
+                                            <span class="badge-status badge-status-in_progress"><i class="bi bi-play-circle"></i> Em Progresso</span>
+                                        {% elif ticket.status == 'resolved' %}
+                                            <span class="badge-status badge-status-resolved"><i class="bi bi-check-circle"></i> Resolvido</span>
+                                        {% elif ticket.status == 'closed' %}
+                                            <span class="badge-status badge-status-closed"><i class="bi bi-slash-circle"></i> Fechado</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        <a href="{{ url_for('attendant.view_ticket', ticket_id=ticket.id) }}" class="btn btn-sm btn-premium py-2 px-3">
+                                            Responder <i class="bi bi-chat-dots ms-1"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Available Unassigned Tickets -->
+    <div class="col-12">
+        <h3 class="mb-3 d-flex align-items-center gap-2">
+            <i class="bi bi-inbox text-warning"></i> Chamados Aguardando Atendimento
+            <span class="badge bg-warning text-dark fs-7 rounded-pill">{{ unassigned_tickets | length }}</span>
+        </h3>
+        
+        <div class="glass-card">
+            {% if not unassigned_tickets %}
+                <div class="text-center py-4">
+                    <i class="bi bi-check2-all text-success display-4 mb-2 d-inline-block" style="opacity: 0.5;"></i>
+                    <p class="text-secondary mb-0">Excelente! Nenhum chamado na fila de espera.</p>
+                </div>
+            {% else %}
+                <div class="table-responsive">
+                    <table class="premium-table">
+                        <thead>
+                            <tr>
+                                <th>Protocolo</th>
+                                <th>Título</th>
+                                <th>Cliente</th>
+                                <th>Data de Abertura</th>
+                                <th>Status</th>
+                                <th class="text-end">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ticket in unassigned_tickets %}
+                                <tr>
+                                    <td><span class="text-secondary">#{{ "%05d" | format(ticket.id) }}</span></td>
+                                    <td><span class="fw-semibold">{{ ticket.title }}</span></td>
+                                    <td><span class="text-light">{{ ticket.customer.name }}</span></td>
+                                    <td><span class="text-secondary">{{ ticket.created_at.strftime('%d/%m/%Y às %H:%M') }}</span></td>
+                                    <td><span class="badge-status badge-status-open"><i class="bi bi-record-circle"></i> Aberto</span></td>
+                                    <td class="text-end">
+                                        <div class="d-flex justify-content-end gap-2">
+                                            <a href="{{ url_for('attendant.view_ticket', ticket_id=ticket.id) }}" class="btn btn-sm btn-premium-secondary py-2 px-3">
+                                                Ver Detalhes
+                                            </a>
+                                            <form action="{{ url_for('attendant.assign_ticket', ticket_id=ticket.id) }}" method="POST" class="d-inline">
+                                                <button type="submit" class="btn btn-sm btn-premium py-2 px-3">
+                                                    Assumir <i class="bi bi-person-plus ms-1"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

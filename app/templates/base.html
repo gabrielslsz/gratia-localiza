@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Gratia Localiza - Sistema de Atendimento{% endblock %}</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Custom Premium CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+    <!-- Alerts container for flash messages -->
+    <div class="alert-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert-premium alert-premium-{{ category if category != 'error' else 'danger' }}" role="alert">
+                        {% if category == 'success' %}
+                            <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                        {% elif category == 'danger' or category == 'error' %}
+                            <i class="bi bi-exclamation-triangle-fill text-danger fs-5"></i>
+                        {% elif category == 'warning' %}
+                            <i class="bi bi-exclamation-circle-fill text-warning fs-5"></i>
+                        {% else %}
+                            <i class="bi bi-info-circle-fill text-primary fs-5"></i>
+                        {% endif %}
+                        <div>{{ message }}</div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg premium-navbar navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('index') }}">
+                <i class="bi bi-headset"></i> <span>Gratia Localiza</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    {% if current_user.is_authenticated %}
+                        {% if current_user.role == 'admin' %}
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.endpoint == 'admin.dashboard' %}active{% endif %}" href="{{ url_for('admin.dashboard') }}">
+                                    <i class="bi bi-speedometer2"></i> Dashboard
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.endpoint == 'admin.users' %}active{% endif %}" href="{{ url_for('admin.users') }}">
+                                    <i class="bi bi-people"></i> Atendentes
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.endpoint == 'admin.reports' %}active{% endif %}" href="{{ url_for('admin.reports') }}">
+                                    <i class="bi bi-graph-up"></i> Relatórios
+                                </a>
+                            </li>
+                        {% elif current_user.role == 'attendant' %}
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.endpoint == 'attendant.dashboard' %}active{% endif %}" href="{{ url_for('attendant.dashboard') }}">
+                                    <i class="bi bi-kanban"></i> Chamados
+                                </a>
+                            </li>
+                        {% elif current_user.role == 'customer' %}
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.endpoint == 'customer.dashboard' %}active{% endif %}" href="{{ url_for('customer.dashboard') }}">
+                                    <i class="bi bi-ticket-perforated"></i> Meus Chamados
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.endpoint == 'customer.create_ticket' %}active{% endif %}" href="{{ url_for('customer.create_ticket') }}">
+                                    <i class="bi bi-plus-circle"></i> Novo Chamado
+                                </a>
+                            </li>
+                        {% endif %}
+                        <li class="nav-item ms-lg-3">
+                            <span class="navbar-text text-secondary me-3 d-none d-lg-inline">
+                                Olá, <strong>{{ current_user.name }}</strong> ({{ current_user.role | capitalize }})
+                            </span>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn btn-sm btn-premium-secondary" href="{{ url_for('auth.logout') }}">
+                                Sair <i class="bi bi-box-arrow-right"></i>
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'auth.login' %}active{% endif %}" href="{{ url_for('auth.login') }}">Entrar</a>
+                        </li>
+                        <li class="nav-item ms-lg-2">
+                            <a class="btn btn-sm btn-premium" href="{{ url_for('auth.register') }}">Cadastrar-se</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container my-5 flex-grow-1">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="py-4 mt-auto border-top" style="border-color: var(--border-color) !important; background: rgba(9, 10, 15, 0.5);">
+        <div class="container text-center text-secondary fs-7">
+            <p class="mb-0">&copy; 2026 Gratia Localiza. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5 Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script>
+        // Auto-dismiss alerts after 4 seconds
+        setTimeout(() => {
+            const alerts = document.querySelectorAll('.alert-premium');
+            alerts.forEach(alert => {
+                alert.style.transition = 'opacity 0.5s ease-out, transform 0.5s ease-out';
+                alert.style.opacity = '0';
+                alert.style.transform = 'translateX(100%)';
+                setTimeout(() => alert.remove(), 500);
+            });
+        }, 4000);
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

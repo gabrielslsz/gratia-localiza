@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block title %}Painel do Cliente - Gratia Localiza{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="mb-1">Meus Chamados</h1>
+        <p class="text-secondary mb-0">Gerencie e acompanhe o status de suas solicitações</p>
+    </div>
+    <a href="{{ url_for('customer.create_ticket') }}" class="btn btn-premium">
+        <i class="bi bi-plus-circle me-2"></i> Novo Chamado
+    </a>
+</div>
+
+<div class="glass-card">
+    {% if not tickets %}
+        <div class="text-center py-5">
+            <i class="bi bi-ticket-perforated text-muted display-1 mb-3 d-inline-block" style="opacity: 0.3;"></i>
+            <h3>Nenhum chamado aberto</h3>
+            <p class="text-secondary max-width-500 mx-auto">Você ainda não enviou nenhuma solicitação de suporte. Clique no botão acima para abrir seu primeiro chamado.</p>
+            <a href="{{ url_for('customer.create_ticket') }}" class="btn btn-premium mt-3">
+                Abrir Chamado
+            </a>
+        </div>
+    {% else %}
+        <div class="table-responsive">
+            <table class="premium-table">
+                <thead>
+                    <tr>
+                        <th>Protocolo</th>
+                        <th>Título</th>
+                        <th>Data de Abertura</th>
+                        <th>Atendente</th>
+                        <th>Status</th>
+                        <th class="text-end">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ticket in tickets %}
+                        <tr>
+                            <td>
+                                <span class="text-secondary">#{{ "%05d" | format(ticket.id) }}</span>
+                            </td>
+                            <td>
+                                <span class="fw-semibold text-primary-hover">{{ ticket.title }}</span>
+                            </td>
+                            <td>
+                                <span class="text-secondary">{{ ticket.created_at.strftime('%d/%m/%Y às %H:%M') }}</span>
+                            </td>
+                            <td>
+                                {% if ticket.attendant %}
+                                    <span class="text-light"><i class="bi bi-person-badge me-1"></i> {{ ticket.attendant.name }}</span>
+                                {% else %}
+                                    <span class="text-muted"><i class="bi bi-hourglass-split me-1"></i> Aguardando Atendente</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if ticket.status == 'open' %}
+                                    <span class="badge-status badge-status-open"><i class="bi bi-record-circle"></i> Aberto</span>
+                                {% elif ticket.status == 'in_progress' %}
+                                    <span class="badge-status badge-status-in_progress"><i class="bi bi-play-circle"></i> Em Progresso</span>
+                                {% elif ticket.status == 'resolved' %}
+                                    <span class="badge-status badge-status-resolved"><i class="bi bi-check-circle"></i> Resolvido</span>
+                                {% elif ticket.status == 'closed' %}
+                                    <span class="badge-status badge-status-closed"><i class="bi bi-slash-circle"></i> Fechado</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                <a href="{{ url_for('customer.view_ticket', ticket_id=ticket.id) }}" class="btn btn-sm btn-premium-secondary py-2 px-3">
+                                    Visualizar <i class="bi bi-arrow-right ms-1"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

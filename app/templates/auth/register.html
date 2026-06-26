@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}Criar Conta - Gratia Localiza{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center align-items-center" style="min-height: 70vh;">
+    <div class="col-md-5">
+        <div class="glass-card">
+            <div class="text-center mb-4">
+                <i class="bi bi-person-plus text-primary display-4 mb-2 d-inline-block"></i>
+                <h2 class="mb-1">Crie sua conta</h2>
+                <p class="text-secondary">Cadastre-se para abrir e gerenciar chamados</p>
+            </div>
+            
+            <form action="{{ url_for('auth.register') }}" method="POST">
+                <div class="mb-3">
+                    <label for="name" class="form-label">Nome Completo</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-transparent border-end-0" style="border-color: var(--border-color); color: var(--text-secondary);">
+                            <i class="bi bi-person"></i>
+                        </span>
+                        <input type="text" class="form-control border-start-0" id="name" name="name" placeholder="Seu nome completo" required>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="email" class="form-label">Endereço de E-mail</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-transparent border-end-0" style="border-color: var(--border-color); color: var(--text-secondary);">
+                            <i class="bi bi-envelope"></i>
+                        </span>
+                        <input type="email" class="form-control border-start-0" id="email" name="email" placeholder="nome@exemplo.com" required>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="password" class="form-label">Senha</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-transparent border-end-0" style="border-color: var(--border-color); color: var(--text-secondary);">
+                            <i class="bi bi-lock"></i>
+                        </span>
+                        <input type="password" class="form-control border-start-0" id="password" name="password" placeholder="Mínimo 6 caracteres" required>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="confirm_password" class="form-label">Confirme a Senha</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-transparent border-end-0" style="border-color: var(--border-color); color: var(--text-secondary);">
+                            <i class="bi bi-lock-fill"></i>
+                        </span>
+                        <input type="password" class="form-control border-start-0" id="confirm_password" name="confirm_password" placeholder="Repita sua senha" required>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-premium w-100 mb-3">Registrar Conta</button>
+            </form>
+            
+            <div class="text-center mt-3">
+                <p class="text-secondary mb-0">Já possui uma conta? <a href="{{ url_for('auth.login') }}" class="text-primary text-decoration-none fw-semibold">Faça Login</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
