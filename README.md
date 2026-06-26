@@ -1,26 +1,34 @@
-# Sistema de Atendimento
+## Gratia Localiza
 
-Sistema web para gestão de tickets de atendimento, focado em agilidade e organização entre clientes e suporte.
+### Acesse em:
 
-## Como iniciar
 
-### Pré-requisitos
-- Docker e Docker Compose instalados.
+[https://gratialocaliza.com.br](https://gratia-localiza.onrender.com/login)
 
-### Passo a passo
-1. Clone o repositório.
-2. Copie o arquivo .env.example para .env e ajuste as variáveis.
-3. Execute o comando:
-   ```bash
-   docker-compose up --build
-   ```
-4. Acesse http://localhost:5000.
+### Stack
 
-## Tecnologias
-- Python / Flask
-- Jinja 2 / Bootstrap
-- SQLite
-- Docker
+- Python
+- Flask
+- SQLAlchemy
+- Flask-Login
+- Flask-Migrate
+- Gunicorn
+- Bootstrap
 
-## Licença
-Este projeto está sob a licença MIT - veja o arquivo LICENSE para detalhes.
+### Executar
+
+```bash
+git clone https://github.com/gabrielslsz/gratia-localiza.git
+cd gratia-localiza
+
+python -m venv .venv
+source .venv/bin/activate   # Linux/macOS
+# .venv\Scripts\activate    # Windows
+
+pip install -r requirements.txt
+gunicorn "app:create_app()"
+```
+
+Este projeto foi desenvolvido para disciplina de desenvolvimento mobile 
+do curso de pós-graduação em desenvolvimento de sistemas computacionais 
+do IFTO.
